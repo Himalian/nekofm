@@ -1,14 +1,12 @@
 import { Hono } from 'hono'
 import { renderer } from './renderer'
+import Dash from './dashboard/Dash'
 
 const app = new Hono()
 
 app.use(renderer)
 
-app.get('/', (c) => {
-  return c.render(<h1>Hello from hono</h1>)
-})
-
-app.get("/api/start", (c) => {return c.text("hello from hono api")})
+app.get("/",(c)=>{return c.render(<Dash />)})
+app.get("/dashboard",(c)=>{return c.render(<Dash />)})
 
 export default app

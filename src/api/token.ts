@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { generateNewApiToken, getApiToken, setApiToken } from '../services/storage';
+import { generateNewApiToken, getApiToken, setApiToken } from '../services/apiToken';
 
 const router = new Hono<{ Bindings: CloudflareBindings }>();
 

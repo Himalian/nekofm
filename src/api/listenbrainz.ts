@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { ListenBrainz } from '../types/listenbrainz';
 import type { NowPlayingTrack } from '../types/scrobble_schema';
-import { getApiToken, setNowPlaying } from '../services/storage';
+import { getApiToken, setNowPlaying } from '../services/apiToken';
 
 const router = new Hono<{ Bindings: CloudflareBindings }>();
 

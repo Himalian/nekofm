@@ -1,26 +1,37 @@
-import { Hono } from 'hono'
-import { renderer } from './renderer'
-import Dash from './dashboard/Dash'
-import type ListenBrainz from './types/listenbrainz'
+import { Hono } from 'hono';
+import { renderer } from './renderer';
+import Dash from './dashboard/Dash';
+import listenbrainzRouter from './api/listenbrainz';
+import tokenRouter from './api/token';
+import nowPlayingRouter from './api/nowPlaying';
+import { getApiToken, getNowPlaying } from './services/storage';
 
-const app = new Hono()
+const app = new Hono();
 
-app.use(renderer)
+app.use(renderer);
 
-app.get("/", (c) => { return c.render(<Dash />) })
-app.get("/dashboard", (c) => { return c.render(<Dash />) })
+// Dashboard pages with SSR initial state
+app.get('/', async (c) => {
+  const [token, nowPlaying] = await Promise.all([
+    getApiToken(c.env),
+    getNowPlaying(c.env),
+  ]);
+  return c.render(<Dash initialToken={token} initialNowPlaying={nowPlaying} />);
+});
 
-app.get("/api/test", (c) => { return c.text("Hello from hono") })
+app.get('/dashboard', async (c) => {
+  const [token, nowPlaying] = await Promise.all([
+    getApiToken(c.env),
+    getNowPlaying(c.env),
+  ]);
+  return c.render(<Dash initialToken={token} initialNowPlaying={nowPlaying} />);
+});
 
-app.post("/api/submit-scrobble", async (c) => {
-	const body = await c.req.json<ListenBrainz.SubmitPayload>()
-	return c.json({
-		status: "ok",
-		listenType: body.listen_type,
-		totalCount: 325,
-		listens: {},
-		rawPlayload: body
-	})
-})
+// Mounted API sub-routers
+app.route('/api/listenbrainz', listenbrainzRouter);
+app.route('/api/token', tokenRouter);
+app.route('/api/now-playing', nowPlayingRouter);
 
-export default app
+app.get('/api/test', (c) => c.text('Hello from hono'));
+
+export default app;

@@ -1,0 +1,25 @@
+{
+  "listen_type": "single",
+  "payload": [
+    {
+      "listened_at": 1700000000,
+      "track_metadata": {
+        "artist_name": "Rick Astley",
+        "track_name": "Never Gonna Give You Up",
+        "release_name": "Whenever You Need Somebody",
+        "additional_info": {
+          "artist_mbids": [
+            "db92a151-1ac2-438b-bc43-b82e149dde50"
+          ],
+          "release_mbid": "62ee71ed-a39a-3f41-a1bf-4b92c4516ff2",
+          "recording_mbid": "060a8761-197e-4171-be93-35f99238eb81",
+          "tracknumber": 1,
+          "duration_ms": 213000,
+          "media_player": "Hono Custom Scrobbler",
+          "submission_client": "HonoScrobbler",
+          "submission_client_version": "1.0.0"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+- [ ] 接收来自ListenBrainz的请求，在dashboard显示正在播放的界面
+	- [ ] 基础的dashboard界面，要尽可能简单
+	- [ ] 生成密钥，在dashboard查看密钥
+- [ ] 推送到 lastfm

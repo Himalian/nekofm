@@ -44,6 +44,20 @@ export function generateToken(): string {
 }
 
 /**
+ * Resolves an initial API token from environment variables if configured.
+ */
+function getEnvToken(env?: unknown): string | null {
+  if (env && typeof env === 'object') {
+    const record = env as Record<string, unknown>;
+    const envToken = record.API_TOKEN ?? record.NEKOFM_API_TOKEN;
+    if (typeof envToken === 'string' && envToken.trim().length > 0) {
+      return envToken.trim();
+    }
+  }
+  return null;
+}
+
+/**
  * Retrieves the current API token. Automatically generates and stores an initial token if none exists.
  */
 export async function getApiToken(env?: unknown): Promise<string> {
@@ -57,7 +71,7 @@ export async function getApiToken(env?: unknown): Promise<string> {
   }
 
   if (!token) {
-    token = generateToken();
+    token = getEnvToken(env) ?? generateToken();
     await setApiToken(env, token);
   }
 

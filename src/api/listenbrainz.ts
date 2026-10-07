@@ -3,7 +3,7 @@ import type { ListenBrainz } from '../types/listenbrainz';
 import type { NowPlayingTrack } from '../types/scrobble_schema';
 import { getApiToken, setNowPlaying } from '../services/storage';
 
-const router = new Hono();
+const router = new Hono<{ Bindings: CloudflareBindings }>();
 
 /**
  * Extracts and normalizes the bearer or token credential from the Authorization header.

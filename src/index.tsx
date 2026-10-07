@@ -6,7 +6,7 @@ import tokenRouter from './api/token';
 import nowPlayingRouter from './api/nowPlaying';
 import { getApiToken, getNowPlaying } from './services/storage';
 
-const app = new Hono();
+const app = new Hono<{ Bindings: CloudflareBindings }>();
 
 app.use(renderer);
 

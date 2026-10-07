@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { getNowPlaying } from '../services/storage';
 
-const router = new Hono();
+const router = new Hono<{ Bindings: CloudflareBindings }>();
 
 /**
  * GET /api/now-playing

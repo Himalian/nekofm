@@ -15,7 +15,30 @@ declare const crypto: {
 const STORAGE_KEYS = {
   API_TOKEN: 'nekofm:api_token',
   NOW_PLAYING: 'nekofm:now_playing',
+  RULES: 'nekofm:rules',
+  HISTORY: 'nekofm:history',
 } as const;
+
+export interface ScrobbleRule {
+  id: string;
+  name: string;
+  enabled: boolean;
+  field: 'track' | 'artist' | 'release';
+  operator: 'contains' | 'equals' | 'regex';
+  pattern: string;
+  action: 'replace' | 'trim' | 'drop';
+  replaceValue?: string;
+}
+
+export interface ScrobbleHistoryItem {
+  id: string;
+  trackName: string;
+  artistName: string;
+  releaseName?: string;
+  timestamp: number;
+  status: 'forwarded' | 'modified' | 'dropped';
+  ruleApplied?: string;
+}
 
 // Module-level in-memory cache for local development and environments without KV bindings
 const memoryStore = new Map<string, string>();
@@ -138,3 +161,82 @@ export async function setNowPlaying(env: unknown, track: NowPlayingTrack): Promi
     memoryStore.set(STORAGE_KEYS.NOW_PLAYING, rawJson);
   }
 }
+
+/**
+ * Retrieves configured scrobble rules from storage.
+ */
+export async function getRules(env?: unknown): Promise<ScrobbleRule[]> {
+  const kv = getKV(env);
+  let rawJson: string | null = null;
+
+  if (kv) {
+    rawJson = await kv.get(STORAGE_KEYS.RULES);
+  } else {
+    rawJson = memoryStore.get(STORAGE_KEYS.RULES) ?? null;
+  }
+
+  if (!rawJson) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(rawJson) as ScrobbleRule[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Saves configured scrobble rules to storage.
+ */
+export async function setRules(env: unknown, rules: ScrobbleRule[]): Promise<void> {
+  const rawJson = JSON.stringify(rules);
+  const kv = getKV(env);
+
+  if (kv) {
+    await kv.put(STORAGE_KEYS.RULES, rawJson);
+  } else {
+    memoryStore.set(STORAGE_KEYS.RULES, rawJson);
+  }
+}
+
+/**
+ * Retrieves recent scrobble history from storage.
+ */
+export async function getHistory(env?: unknown): Promise<ScrobbleHistoryItem[]> {
+  const kv = getKV(env);
+  let rawJson: string | null = null;
+
+  if (kv) {
+    rawJson = await kv.get(STORAGE_KEYS.HISTORY);
+  } else {
+    rawJson = memoryStore.get(STORAGE_KEYS.HISTORY) ?? null;
+  }
+
+  if (!rawJson) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(rawJson) as ScrobbleHistoryItem[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Appends a scrobble item to recent history (maintaining latest 50 items).
+ */
+export async function addHistory(env: unknown, item: ScrobbleHistoryItem): Promise<void> {
+  const list = await getHistory(env);
+  const updated = [item, ...list].slice(0, 50);
+  const rawJson = JSON.stringify(updated);
+  const kv = getKV(env);
+
+  if (kv) {
+    await kv.put(STORAGE_KEYS.HISTORY, rawJson);
+  } else {
+    memoryStore.set(STORAGE_KEYS.HISTORY, rawJson);
+  }
+}
+

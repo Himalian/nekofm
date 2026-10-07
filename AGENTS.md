@@ -104,7 +104,7 @@ All commands should preferably be run with `bun`:
 
 ## Agent Verification Checklist
 
-- run `bun run build` after complete a task to pass build
+- only run `bun run build` after complete a task to pass build
 - frontend pages only have layout and typography, styles should be designed and implemented by user manually
 
 ## Agent Behaviours

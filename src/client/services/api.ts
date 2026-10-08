@@ -1,5 +1,4 @@
-import type { NowPlayingTrack } from '../../types/scrobble_schema';
-import type { ScrobbleRule, ScrobbleHistoryItem } from '../../services/apiToken';
+import type { NowPlayingTrack, ScrobbleRule, ScrobbleHistoryItem } from '../../types/scrobble_schema';
 
 export async function fetchNowPlaying(): Promise<NowPlayingTrack | null> {
   const res = await fetch('/api/now-playing');

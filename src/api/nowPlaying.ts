@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { getNowPlaying } from '../services/apiToken';
+import { getNowPlaying } from '../services/nowPlaying';
 
 const router = new Hono<{ Bindings: CloudflareBindings }>();
 

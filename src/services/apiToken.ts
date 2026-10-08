@@ -1,60 +1,12 @@
-import type { NowPlayingTrack } from '../types/scrobble_schema';
+import { STORAGE_KEYS, getRawItem, setRawItem } from './storage';
+import type { ScrobbleRule, ScrobbleHistoryItem } from '../types/scrobble_schema';
 
-/**
- * Minimal interface representing a Cloudflare KV namespace.
- */
-interface KVLike {
-  get(key: string): Promise<string | null>;
-  put(key: string, value: string): Promise<void>;
-}
+// Re-export types for backward compatibility with existing imports
+export type { ScrobbleRule, ScrobbleHistoryItem };
 
 declare const crypto: {
   getRandomValues(array: Uint8Array): Uint8Array;
 };
-
-const STORAGE_KEYS = {
-  API_TOKEN: 'nekofm:api_token',
-  NOW_PLAYING: 'nekofm:now_playing',
-  RULES: 'nekofm:rules',
-  HISTORY: 'nekofm:history',
-} as const;
-
-export interface ScrobbleRule {
-  id: string;
-  name: string;
-  enabled: boolean;
-  field: 'track' | 'artist' | 'release';
-  operator: 'contains' | 'equals' | 'regex';
-  pattern: string;
-  action: 'replace' | 'trim' | 'drop';
-  replaceValue?: string;
-}
-
-export interface ScrobbleHistoryItem {
-  id: string;
-  trackName: string;
-  artistName: string;
-  releaseName?: string;
-  timestamp: number;
-  status: 'forwarded' | 'modified' | 'dropped';
-  ruleApplied?: string;
-}
-
-// Module-level in-memory cache for local development and environments without KV bindings
-const memoryStore = new Map<string, string>();
-
-/**
- * Resolves the KV namespace from the Cloudflare Worker environment if available.
- */
-function getKV(env?: unknown): KVLike | null {
-  if (env && typeof env === 'object' && 'NEKOFM_KV' in env) {
-    const kv = (env as Record<string, unknown>).NEKOFM_KV;
-    if (kv && typeof kv === 'object' && 'get' in kv && 'put' in kv) {
-      return kv as KVLike;
-    }
-  }
-  return null;
-}
 
 /**
  * Generates a high-entropy API token.
@@ -69,7 +21,7 @@ export function generateToken(): string {
 /**
  * Resolves an initial API token from environment variables if configured.
  */
-function getEnvToken(env?: unknown): string | null {
+export function getEnvToken(env?: unknown): string | null {
   if (env && typeof env === 'object') {
     const record = env as Record<string, unknown>;
     const envToken = record.API_TOKEN ?? record.NEKOFM_API_TOKEN;
@@ -84,14 +36,7 @@ function getEnvToken(env?: unknown): string | null {
  * Retrieves the current API token. Automatically generates and stores an initial token if none exists.
  */
 export async function getApiToken(env?: unknown): Promise<string> {
-  const kv = getKV(env);
-  let token: string | null = null;
-
-  if (kv) {
-    token = await kv.get(STORAGE_KEYS.API_TOKEN);
-  } else {
-    token = memoryStore.get(STORAGE_KEYS.API_TOKEN) ?? null;
-  }
+  let token = await getRawItem(STORAGE_KEYS.API_TOKEN, env);
 
   if (!token) {
     token = getEnvToken(env) ?? generateToken();
@@ -106,13 +51,7 @@ export async function getApiToken(env?: unknown): Promise<string> {
  */
 export async function setApiToken(env: unknown, token: string): Promise<void> {
   const trimmed = token.trim();
-  const kv = getKV(env);
-
-  if (kv) {
-    await kv.put(STORAGE_KEYS.API_TOKEN, trimmed);
-  } else {
-    memoryStore.set(STORAGE_KEYS.API_TOKEN, trimmed);
-  }
+  await setRawItem(STORAGE_KEYS.API_TOKEN, trimmed, env);
 }
 
 /**
@@ -123,120 +62,3 @@ export async function generateNewApiToken(env?: unknown): Promise<string> {
   await setApiToken(env, newToken);
   return newToken;
 }
-
-/**
- * Retrieves the currently playing track from storage.
- */
-export async function getNowPlaying(env?: unknown): Promise<NowPlayingTrack | null> {
-  const kv = getKV(env);
-  let rawJson: string | null = null;
-
-  if (kv) {
-    rawJson = await kv.get(STORAGE_KEYS.NOW_PLAYING);
-  } else {
-    rawJson = memoryStore.get(STORAGE_KEYS.NOW_PLAYING) ?? null;
-  }
-
-  if (!rawJson) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(rawJson) as NowPlayingTrack;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Persists the currently playing track state.
- */
-export async function setNowPlaying(env: unknown, track: NowPlayingTrack): Promise<void> {
-  const rawJson = JSON.stringify(track);
-  const kv = getKV(env);
-
-  if (kv) {
-    await kv.put(STORAGE_KEYS.NOW_PLAYING, rawJson);
-  } else {
-    memoryStore.set(STORAGE_KEYS.NOW_PLAYING, rawJson);
-  }
-}
-
-/**
- * Retrieves configured scrobble rules from storage.
- */
-export async function getRules(env?: unknown): Promise<ScrobbleRule[]> {
-  const kv = getKV(env);
-  let rawJson: string | null = null;
-
-  if (kv) {
-    rawJson = await kv.get(STORAGE_KEYS.RULES);
-  } else {
-    rawJson = memoryStore.get(STORAGE_KEYS.RULES) ?? null;
-  }
-
-  if (!rawJson) {
-    return [];
-  }
-
-  try {
-    return JSON.parse(rawJson) as ScrobbleRule[];
-  } catch {
-    return [];
-  }
-}
-
-/**
- * Saves configured scrobble rules to storage.
- */
-export async function setRules(env: unknown, rules: ScrobbleRule[]): Promise<void> {
-  const rawJson = JSON.stringify(rules);
-  const kv = getKV(env);
-
-  if (kv) {
-    await kv.put(STORAGE_KEYS.RULES, rawJson);
-  } else {
-    memoryStore.set(STORAGE_KEYS.RULES, rawJson);
-  }
-}
-
-/**
- * Retrieves recent scrobble history from storage.
- */
-export async function getHistory(env?: unknown): Promise<ScrobbleHistoryItem[]> {
-  const kv = getKV(env);
-  let rawJson: string | null = null;
-
-  if (kv) {
-    rawJson = await kv.get(STORAGE_KEYS.HISTORY);
-  } else {
-    rawJson = memoryStore.get(STORAGE_KEYS.HISTORY) ?? null;
-  }
-
-  if (!rawJson) {
-    return [];
-  }
-
-  try {
-    return JSON.parse(rawJson) as ScrobbleHistoryItem[];
-  } catch {
-    return [];
-  }
-}
-
-/**
- * Appends a scrobble item to recent history (maintaining latest 50 items).
- */
-export async function addHistory(env: unknown, item: ScrobbleHistoryItem): Promise<void> {
-  const list = await getHistory(env);
-  const updated = [item, ...list].slice(0, 50);
-  const rawJson = JSON.stringify(updated);
-  const kv = getKV(env);
-
-  if (kv) {
-    await kv.put(STORAGE_KEYS.HISTORY, rawJson);
-  } else {
-    memoryStore.set(STORAGE_KEYS.HISTORY, rawJson);
-  }
-}
-

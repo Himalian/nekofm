@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { getHistory } from '../services/apiToken';
+import { getHistory } from '../services/history';
 
 const historyRouter = new Hono();
 

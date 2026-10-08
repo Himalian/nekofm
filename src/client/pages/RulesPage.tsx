@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Sliders, Plus, Trash2, ArrowUp, ArrowDown, Play, CheckCircle2, AlertTriangle, ShieldCheck, HelpCircle } from 'lucide-react';
-import type { ScrobbleRule } from '../../services/apiToken';
+import type { ScrobbleRule } from '../../types/scrobble_schema';
 import { fetchRules, saveRules } from '../services/api';
 
 export default function RulesPage() {

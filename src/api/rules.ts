@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { getRules, setRules, type ScrobbleRule } from '../services/apiToken';
+import { getRules, setRules, type ScrobbleRule } from '../services/rules';
 
 const rulesRouter = new Hono();
 

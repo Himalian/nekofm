@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardAction, CardContent } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from 'cn';
-import type { ScrobbleHistoryItem } from '../../services/apiToken';
+import type { ScrobbleHistoryItem } from '../../types/scrobble_schema';
 import { fetchHistory } from '../services/api';
 
 export interface ScrobbleHistoryProps {

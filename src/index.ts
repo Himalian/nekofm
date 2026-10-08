@@ -4,6 +4,7 @@ import tokenRouter from './api/token';
 import nowPlayingRouter from './api/nowPlaying';
 import rulesRouter from './api/rules';
 import historyRouter from './api/history';
+import type { Env } from 'hono';
 
 const app = new Hono();
 
@@ -14,6 +15,8 @@ app.route('/api/now-playing', nowPlayingRouter);
 app.route('/api/rules', rulesRouter);
 app.route('/api/history', historyRouter);
 
-app.get('/api/test', (c) => c.text('Hello from NekoFM API'));
+app.get('/apis/test', (c) => c.text(`Hello from NekoFM API,URL ${c.req.url}`));
+
+app.get('/apis/get-url',(c) => c.text(new URL(c.req.url).origin))
 
 export default app;

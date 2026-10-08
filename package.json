@@ -30,6 +30,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "vite": "^8.1.4",
+    "vite-tsconfig-paths": "^6.1.1",
     "wrangler": "^4.110.0"
   }
 }

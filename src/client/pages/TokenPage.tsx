@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { KeyRound, Copy, Check, Sparkles, Save, ShieldAlert, ArrowUpRight, ExternalLink } from 'lucide-react';
 import { fetchApiToken, generateApiToken, updateApiToken } from '../services/api';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
 
 export default function TokenPage() {
 	const [token, setToken] = useState('');
@@ -23,7 +26,6 @@ export default function TokenPage() {
 		try {
 			await navigator.clipboard.writeText(token);
 			setCopied(true);
-			notify('Token copied to clipboard!');
 			setTimeout(() => setCopied(false), 2000);
 		} catch {
 			notify('Failed to copy to clipboard', true);
@@ -69,8 +71,8 @@ export default function TokenPage() {
 			{statusMessage && (
 				<div
 					className={`p-3 text-sm rounded-lg border font-medium flex items-center justify-between transition-all ${statusMessage.error
-							? 'bg-rose-50 text-rose-800 border-rose-200'
-							: 'bg-emerald-50 text-emerald-800 border-emerald-200'
+						? 'bg-rose-50 text-rose-800 border-rose-200'
+						: 'bg-emerald-50 text-emerald-800 border-emerald-200'
 						}`}
 				>
 					<span>{statusMessage.text}</span>
@@ -95,25 +97,20 @@ export default function TokenPage() {
 								value={token}
 								className="w-full font-mono text-sm px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 focus:outline-none"
 							/>
-							<button
-								type="button"
-								onClick={handleCopy}
-								className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors shrink-0 shadow-sm cursor-pointer"
-							>
-								{copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+							<Button onClick={handleCopy}>
 								{copied ? 'Copied' : 'Copy'}
-							</button>
+							</Button>
 						</div>
 					</div>
 
 					{/* Submission Endpoint Guide */}
-						<div className="font-medium text-indigo-950 flex items-center gap-1.5">
-							<span>ListenBrainz API Endpoint:</span>
-						</div>
-						<code className="block font-mono text-xs text-indigo-800 bg-white/80 p-2 rounded border border-indigo-200/60 select-all">
-							{window.location.origin}/api/listenbrainz/
+					<div className="font-medium text-indigo-950 flex items-center gap-1.5">
+						<span>ListenBrainz API Endpoint:</span>
+					</div>
+					<code className="block font-mono text-xs text-indigo-800 bg-white/80 p-2 rounded border border-indigo-200/60 select-all">
+						{window.location.origin}/api/listenbrainz/
 
-						</code>
+					</code>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
 						{/* Generate New Token */}
@@ -146,20 +143,20 @@ export default function TokenPage() {
 								Prefer using an existing memorable passphrase or UUID? Set it here.
 							</p>
 							<div className="flex gap-2">
-								<input
+								<Input
 									type="text"
 									placeholder="Enter custom token..."
 									value={customToken}
 									onChange={(e) => setCustomToken(e.target.value)}
-									className="w-full text-sm font-mono px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+									className="w-full text-sm font-mono"
 								/>
-								<button
+								<Button
 									type="submit"
 									disabled={loading || !customToken.trim()}
-									className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-lg shadow-sm transition-colors shrink-0 cursor-pointer"
+									// className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-lg shadow-sm transition-colors shrink-0 cursor-pointer"
 								>
 									Save
-								</button>
+								</Button>
 							</div>
 						</form>
 					</div>
